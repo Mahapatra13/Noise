@@ -15,3 +15,7 @@ pip install -r requirements.txt
 ```bash
 https://www.picotech.com/downloads
 ```
+
+# Notes
+## Program Running Slow
+- Once when the acquisition loop was slower than usual (10s per acquisition), I restarted the kernel and re-ran it. This fixed the slower runtime.
