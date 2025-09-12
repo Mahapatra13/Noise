@@ -19,3 +19,4 @@ https://www.picotech.com/downloads
 # Notes
 ## Program Running Slow
 - Once when the acquisition loop was slower than usual (10s per acquisition), I restarted the kernel and re-ran it. This fixed the slower runtime.
+- Unplugging the USB theoretically should wipe the memory on the PICO. Tried this and it has worked before. (Just keep it unplugged for a few seconds so any capacitors discharge in the PICO)
