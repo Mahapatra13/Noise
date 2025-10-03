@@ -14,8 +14,8 @@ volt_scale=5
 n_Bin=10
 n_segments = 10
 g=500*100 # Define amplifier gain
-numAcquisitionsArray = [10, 100] # THESE VALUES ARE CUMULATIVE.
-num_runs = 5
+numAcquisitionsArray = [10, 20]
+num_runs = 2
 #Total number of waveforms = numAcquisition[i] * n_Bin * number of buffer segments (n_segments)
 
 #######################
@@ -60,7 +60,7 @@ def xcorr_avg_mV(a_mv, b_mv, n_bins):
         acc = c if acc is None else (acc + c)
     return acc / n_bins
 
-def acquire_one_batch(numAcquisitions, n_segments, n_Bin, currentAcquisition):
+def acquire_one_batch(numAcquisitions, n_segments, n_Bin):
 
     average_cross_corr = None
     cmaxSamples_Time = ctypes.c_int32(np.int32(maxSamples/n_Bin))
@@ -118,7 +118,7 @@ def acquire_one_batch(numAcquisitions, n_segments, n_Bin, currentAcquisition):
         else:
             average_cross_corr = [(x + y) for x, y in zip(average_cross_corr, cross_corr_avg)]
             
-        print("Acquisition number:", i + 1 + currentAcquisition)
+        print("Acquisition number:", i + 1)
 
     return average_cross_corr, cmaxSamples_Time
 
@@ -144,46 +144,49 @@ def plot_psd(Sv_corr, title, label, fwelch, f_lo, f_hi):
     plt.title(title)
     ax.legend()
 
+def run_psd_analysis(numAcquisitions):
+    all_xcorrs = []
+
+    for run in range(num_runs):
+        avg_corr, cmaxSamples_Time = acquire_one_batch(numAcquisitions, n_segments, n_Bin)
+        all_xcorrs.append(avg_corr)
+        print(f"Completed run {run + 1}/{num_runs} for {numAcquisitions} acquisitions")
+
+    # Create time/frequency axis
+    time = np.linspace(0, ((cmaxSamples_Time.value) - 1) * timeIntervalns.value / 1e9, cmaxSamples_Time.value)
+    T = (time.max() - time.min())
+    N = np.size(time)
+    fs = int(N / T)
+    dt = 1 / fs
+    fwelch = fftfreq(N, dt)
+    fwelch = fwelch[:fwelch.size // 2]
+
+    Sv_xcorr_runs = [one_sided_psd_from_corr(corr, fs, numAcquisitions) for corr in all_xcorrs]
+
+    Sv_xcorr = np.mean(Sv_xcorr_runs, axis=0)
+
+    # PSD printout
+    f_lo = 100_000
+    f_hi = 300_000
+    print(f"\n===== Results for {numAcquisitions} acquisitions =====")
+    print(f"Cross PSD  = {np.mean(Sv_xcorr[np.where((fwelch > f_lo) & (fwelch < f_hi))])} between {f_lo} and {f_hi} Hz")
+
+    # Plot PSDs
+    plot_psd(Sv_xcorr, f"FFT of {num_runs} Averaged Cross-Correlation ({numAcquisitions} Acq)", "cross correlation", fwelch, f_lo, f_hi)
+
+    # Save data
+    os.makedirs("outputs/Mass Acquisition Script", exist_ok=True)
+
+    plt.savefig(f"outputs/Mass Acquisition Script/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{num_runs}avg_{numAcquisitions}acquisitions.png")
+    np.savetxt(f'outputs/Mass Acquisition Script/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{num_runs}avg_{numAcquisitions}acquisitions.hdf5', [(x,y) for x,y in zip(fwelch,Sv_xcorr)], delimiter=',')
+    
+    print(f"Saved PSD data for {num_runs} averaging, {numAcquisitions} acquisitions.")
+
 ########################################################
 
-# Collect average correlation from multiple batches
-all_xcorrs = []
-
-currentAcquisition = 0
-start_time = ti.time()
-
-for i in range(np.size(numAcquisitionsArray)):
-
-    avg_corr, cmaxSamples_Time = acquire_one_batch(numAcquisitionsArray[i] - currentAcquisition, n_segments, n_Bin, currentAcquisition)
-
-    currentAcquisition = numAcquisitionsArray[i]
-    all_xcorrs.append(avg_corr)
-
-    elapsed = ti.time() - start_time
-
-    print(f"Completed {numAcquisitionsArray[i]} Acquisitions in {elapsed:.2f} seconds")
-
-    average_xcorr = np.sum(np.stack(all_xcorrs, axis=0), axis=0)
-    
-    time = np.linspace(0, ((cmaxSamples_Time.value) - 1) * timeIntervalns.value/1e9, cmaxSamples_Time.value) # Changes time to seconds instead of nanoseconds
-    T = (time.max()-time.min()) # seconds
-    N = np.size(time)
-    fs = int(N/T) # Hz
-    dt = 1/fs
-    fwelch = fftfreq(N,dt)
-    fwelch = fwelch[:fwelch.size//2]
-
-    Sv_xcorr = one_sided_psd_from_corr(average_xcorr, fs, numAcquisitionsArray[i])
-    f_lo = 100_000 # Hz
-    f_hi = 300_000 # Hz
-    print(f"Cross PSD  = {np.mean(Sv_xcorr[np.where((fwelch>f_lo) & (fwelch<f_hi))])} between {f_lo} and {f_hi} Hz")
-    
-    plot_psd(Sv_xcorr, "FFT of Averaged Cross-Correlation", "cross correlation", fwelch, f_lo, f_hi)
-    
-    os.makedirs("outputs/Mass Acquisition Script", exist_ok=True)
-    plt.savefig(f"outputs/Mass Acquisition Script/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{numAcquisitionsArray[i]}acquisitions.png")
-    np.savetxt(f'outputs/Mass Acquisition Script/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{numAcquisitionsArray[i]}acquisitions.hdf5', [(x,y) for x,y in zip(fwelch,Sv_xcorr)], delimiter=',')
-
+# Runs everything
+for numAcquisitions in numAcquisitionsArray:
+    run_psd_analysis(numAcquisitions)
 
 
 # Stop the scope
