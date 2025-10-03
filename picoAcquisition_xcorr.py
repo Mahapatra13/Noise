@@ -3,7 +3,7 @@ import numpy as np
 from picosdk.ps4000 import ps4000 as ps
 from picosdk.functions import adc2mV, assert_pico_ok
 import matplotlib.pyplot as plt
-import time
+import time as ti
 from scipy.signal import welch, correlate, correlation_lags
 from scipy.fft import fft, fftfreq, fftshift
 from scipy.signal.windows import blackman
@@ -14,7 +14,8 @@ volt_scale=5
 n_Bin=10
 n_segments = 10
 g=500*100 # Define amplifier gain
-numAcquisitionsArray = [100, 1000, 10000, 25000] # THESE VALUES ARE CUMULATIVE.
+numAcquisitionsArray = [10, 100] # THESE VALUES ARE CUMULATIVE.
+num_runs = 5
 #Total number of waveforms = numAcquisition[i] * n_Bin * number of buffer segments (n_segments)
 
 #######################
@@ -149,7 +150,7 @@ def plot_psd(Sv_corr, title, label, fwelch, f_lo, f_hi):
 all_xcorrs = []
 
 currentAcquisition = 0
-start_time = time.time()
+start_time = ti.time()
 
 for i in range(np.size(numAcquisitionsArray)):
 
@@ -158,7 +159,7 @@ for i in range(np.size(numAcquisitionsArray)):
     currentAcquisition = numAcquisitionsArray[i]
     all_xcorrs.append(avg_corr)
 
-    elapsed = time.time() - start_time
+    elapsed = ti.time() - start_time
 
     print(f"Completed {numAcquisitionsArray[i]} Acquisitions in {elapsed:.2f} seconds")
 
