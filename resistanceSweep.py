@@ -66,9 +66,9 @@ data = []
 plt.ion()
 fig, ax = plt.subplots(figsize=(8, 6))
 line, = ax.plot([], [], marker='o', linestyle='-')
-ax.set_xlabel("Keithley Output Voltage (V)")
-ax.set_ylabel("Lock-in Measured Voltage (V)")
-ax.set_title("Real-Time Sweep: Keithley vs Lock-in")
+ax.set_xlabel("V$_{BG}$ (Keithley)")
+ax.set_ylabel("V$_{AB}$ (Lock-In)")
+ax.set_title("V$_{BG}$ vs V$_{AB}$")
 ax.grid(True)
 plt.show()
 
@@ -99,7 +99,7 @@ print("Sweep complete.")
 plt.ioff()  # Turn off interactive mode
 
 # Save plot
-save_path = os.path.abspath("keithley_vs_lockin.png")
+save_path = os.path.abspath("V$_{BG}$ vs V$_{AB}$.png")
 plt.savefig(save_path, dpi=300)
 print(f"Plot saved to: {save_path}")
 
