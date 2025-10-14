@@ -111,7 +111,7 @@ for v in reverse_points:
     time.sleep(delay)
 
 # Set lock-in amplitude to 0 V (turn off excitation)
-sr830.amplitude = 0
+sr830.sine_voltage = 0
 time.sleep(0.5)
 
 # Shutdown instruments
