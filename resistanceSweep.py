@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 from pymeasure.instruments.keithley import Keithley2400
 from pymeasure.instruments.srs import SR830
 from pyvisa import ResourceManager
+import matplotlib
+import os
+
+matplotlib.use('TkAgg')  # or 'Qt5Agg' if Tk is not available
 
 # Set GPIB addresses
 KEITHLEY_ADDR = "GPIB0::25::INSTR"
@@ -58,29 +62,46 @@ sweep_points = np.arange(-10, 10 + step, step)
 
 data = []
 
+# Enable interactive plotting
+plt.ion()
+fig, ax = plt.subplots(figsize=(8, 6))
+line, = ax.plot([], [], marker='o', linestyle='-')
+ax.set_xlabel("Keithley Output Voltage (V)")
+ax.set_ylabel("Lock-in Measured Voltage (V)")
+ax.set_title("Real-Time Sweep: Keithley vs Lock-in")
+ax.grid(True)
+plt.show()
+
+voltages = []
+lockin_voltages = []
+
 print("Starting voltage sweep from -10 V to 10 V...")
+
 
 for v in sweep_points:
     keithley.source_voltage = v
     time.sleep(delay)
     lockin_voltage = sr830.x
     print(f"Keithley V = {v:.3f} V, Lock-in V = {lockin_voltage:.6f} V")
-    data.append((v, lockin_voltage))
+
+    voltages.append(v)
+    lockin_voltages.append(lockin_voltage)
+
+    # Update the plot data
+    line.set_data(voltages, lockin_voltages)
+    ax.relim()
+    ax.autoscale_view()
+
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
 print("Sweep complete.")
+plt.ioff()  # Turn off interactive mode
 
-# Plot Keithley voltage vs lock-in voltage
-voltages = [d[0] for d in data]
-lockin_voltages = [d[1] for d in data]
-
-plt.figure(figsize=(8,6))
-plt.plot(voltages, lockin_voltages, marker='o', linestyle='-')
-plt.xlabel("Keithley Output Voltage (V)")
-plt.ylabel("Lock-in Measured Voltage (V)")
-plt.title("Keithley Output vs Lock-in Measured Voltage")
-plt.grid(True)
-plt.savefig("keithley_vs_lockin.png", dpi=300)  # Save plot as PNG file
-# plt.show()  # If environment supports it
+# Save plot
+save_path = os.path.abspath("keithley_vs_lockin.png")
+plt.savefig(save_path, dpi=300)
+print(f"Plot saved to: {save_path}")
 
 # Sweep Keithley voltage back down to 0 V in steps
 print("Sweeping Keithley output back down to 0 V...")
