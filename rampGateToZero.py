@@ -47,7 +47,6 @@ rm = ResourceManager()
 keithley = Keithley2400(rm.open_resource(KEITHLEY_ADDR))
 
 # Basic Keithley setup
-keithley.reset()
 keithley.use_front_terminals()
 keithley.source_function = "voltage"
 keithley.source_voltage_range = 20
