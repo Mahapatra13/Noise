@@ -1,6 +1,7 @@
 import time
 from pyvisa import ResourceManager
 from pymeasure.instruments.keithley import Keithley2400
+import numpy as np
 
 def safe_ramp_to_zero(keithley, ramp_step=0.1, ramp_delay=0.1):
     try:
