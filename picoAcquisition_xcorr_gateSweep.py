@@ -33,7 +33,7 @@ volt_scale=5
 n_Bin=10
 n_segments = 10
 g=500*100 # Define amplifier gain
-numAcquisitions = 10 # Sets number of acquisitions
+numAcquisitions = 50 # Sets number of acquisitions
 num_runs = 1
 #Total number of waveforms = numAcquisition[i] * n_Bin * number of buffer segments (n_segments)
 
@@ -207,7 +207,7 @@ def run_psd_analysis(numAcquisitions, f_lo, f_hi, keithley_voltage):
     os.makedirs("outputs/xcorrGateSweep", exist_ok=True)
 
     plt.savefig(f"outputs/xcorrGateSweep/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{num_runs}avg_{numAcquisitions}acquisitions_{keithley_voltage}V.png")
-    np.savetxt(f'outputs/xcorrGateSweep/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{num_runs}avg_{numAcquisitions}acquisitions_{keithley_voltage}V.hdf5', [(x,y) for x,y in zip(fwelch,Sv_xcorr)], delimiter=',')
+    np.savetxt(f'outputs/xcorrGateSweep/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{num_runs}avg_{numAcquisitions}acquisitions_{keithley_voltage}V.csv', [(x,y) for x,y in zip(fwelch,Sv_xcorr)], delimiter=',')
     
     print(f"Saved PSD data for {num_runs} averaging and {numAcquisitions} acquisitions at gate voltage {keithley_voltage}V .")
     

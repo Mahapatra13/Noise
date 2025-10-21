@@ -14,8 +14,8 @@ volt_scale=5
 n_Bin=10
 n_segments = 10
 g=500*100 # Define amplifier gain
-numAcquisitionsArray = [10, 20]
-num_runs = 2
+numAcquisitionsArray = [20, 50, 100, 200]
+num_runs = 1
 #Total number of waveforms = numAcquisition[i] * n_Bin * number of buffer segments (n_segments)
 
 #######################
@@ -177,8 +177,8 @@ def run_psd_analysis(numAcquisitions):
     # Save data
     os.makedirs("outputs/Mass Acquisition Script", exist_ok=True)
 
-    plt.savefig(f"outputs/Mass Acquisition Script/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{num_runs}avg_{numAcquisitions}acquisitions.png")
-    np.savetxt(f'outputs/Mass Acquisition Script/cryostat_12and11_gain_5e4_1e4avg_2Ms_10Ksa_20250911_{num_runs}avg_{numAcquisitions}acquisitions.hdf5', [(x,y) for x,y in zip(fwelch,Sv_xcorr)], delimiter=',')
+    plt.savefig(f"outputs/Mass Acquisition Script/1kOhm Simulation/cryo_12and11short_1kohmsim_withloosevoltagesource_gain_5e4_1e4avg_2Ms_10Ksa_20251021_{num_runs}avg_{numAcquisitions}acquisitions.png")
+    np.savetxt(f'outputs/Mass Acquisition Script/1kOhm Simulation/cryo_12and11short_1kohmsimw_withloosevoltagesource_gain_5e4_1e4avg_2Ms_10Ksa_20251021_{num_runs}avg_{numAcquisitions}acquisitions.csv', [(x,y) for x,y in zip(fwelch,Sv_xcorr)], delimiter=',')
     
     print(f"Saved PSD data for {num_runs} averaging, {numAcquisitions} acquisitions.")
 
